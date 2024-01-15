@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "esModuleInterop": true,
+        "target": "ESNext",
+        "moduleResolution": "NodeNext",
+        "removeComments": true,
+        "sourceMap": false,
+        "baseUrl": "src",
+        "noUnusedParameters": true,
+        
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "resolveJsonModule": true,
+
+        "skipLibCheck": true,
+        "allowJs": true,
+        // "checkJs": true,
+        "strict": false,
+    },
+    "include":["src/**/*"],
+    "exclude":["node_modules", "dist/*", "src/static"],
+    "lib": ["es6"]
+}
