@@ -2,10 +2,10 @@
   "name": "typescriptnode-backend-template",
   "version": "1.0.0",
   "description": "practice",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "ts-node-dev --respawn src/bot.ts",
     "build:clean": "rm -rf ./dist/*; mkdir ./dist/logs;",
     "build:config": "cp ./src/config.json ./dist/config.json; cp ./package.json ./dist/package.json",
     "build": "tsc",
@@ -21,15 +21,18 @@
   "author": "Obed Nuertey",
   "license": "ISC",
   "dependencies": {
+    "@grammyjs/menu": "^1.2.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "grammy": "^1.20.3",
+    "lodash": "^4.17.21",
     "ts-node": "^10.9.1"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.10.2",
     "@types/node-telegram-bot-api": "^0.64.2",
     "ts-node-dev": "^2.0.0",
