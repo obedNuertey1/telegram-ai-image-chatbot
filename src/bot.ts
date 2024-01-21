@@ -2,7 +2,7 @@ import {config} from "dotenv";
 import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard} from "grammy";
 import type{Variant as TextEffectVariant} from "./textEffects";
 import express from "express";
-import {Menu} from "@grammyjs/menu";
+import {Menu, MenuRange} from "@grammyjs/menu";
 
 config();
 
@@ -121,6 +121,43 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
             reply_markup: {remove_keyboard: true}
         }
     )
+});
+
+
+function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+    const buttons:string[] = ["🎨Menu", "💰 Balance"]
+    for(let i=0; i<buttons.length; i++){
+        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+    }
+    return range;
+}
+
+const mainMenu: Menu<Context> = new Menu<Context>("main-menu");
+mainMenu.dynamic(mainMenuDynamicFunc).row().text(
+    "➡️Next Image⬅️",
+    (ctx)=> ctx.reply(`➡️Next Image⬅️ has been clicked`)
+);
+
+bot.use(mainMenu);
+
+bot.command("start", (ctx:CommandContext<Context>):void=>{
+    ctx.reply(
+        `Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`,
+        {
+            parse_mode: "Markdown"
+        }
+    );
+
+    ctx.reply(
+        `
+        Create Your Custom Image:\n- Choose a style from the Menu.\n- Describe your dream photo, like 'with purple hair and a leather jacket'.\n- Or, upload a selfie for a new look!
+        `,
+        {
+            reply_markup: mainMenu,
+            parse_mode: "HTML"
+        }
+    )
+
 });
 
 
