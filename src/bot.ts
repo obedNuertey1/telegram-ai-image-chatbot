@@ -122,7 +122,7 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 //     const buttons:string[] = ["🎨Menu", "💰 Balance"]
 //     for(let i=0; i<buttons.length; i++){
 //         range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
-//     }
+//      }
 //     return range;
 // }
 function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
