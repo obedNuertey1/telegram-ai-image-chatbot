@@ -66,12 +66,6 @@ bot.api.setMyCommands([
 ])
 
 
-// bot.command("start", (ctx:CommandContext<Context>):void=>{
-//     ctx.reply(introductionMessage, {
-//         parse_mode: "HTML"
-//     })
-// })
-
 bot.command("yo", (ctx:CommandContext<Context>):void=>{
     const randIndex:number = Math.floor(Math.random() * randomMessages.length);
 
@@ -124,6 +118,13 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 });
 
 
+// function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+//     const buttons:string[] = ["🎨Menu", "💰 Balance"]
+//     for(let i=0; i<buttons.length; i++){
+//         range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+//     }
+//     return range;
+// }
 function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[] = ["🎨Menu", "💰 Balance"]
     for(let i=0; i<buttons.length; i++){
