@@ -77,7 +77,7 @@ bot.command("yo", (ctx:CommandContext<Context>):void=>{
 
 const issuesURLKeyboard:InlineKeyboard = new InlineKeyboard()
 .url(
-    "create a new issues",
+    "create a new issue",
     "https://github.com/obedNuertey1/telegram-ai-image-chatbot/issues"
 )
 
@@ -88,7 +88,8 @@ bot.command("error", (ctx:CommandContext<Context>)=>{
         <strong><i>${ctx.from?.first_name} Please visit the link below to tell me about the problem by creating an issue on this particular github project</i></strong>
         `,
         {
-            reply_markup: issuesURLKeyboard
+            reply_markup: issuesURLKeyboard,
+            parse_mode: "HTML"
         }
     )
 })
@@ -125,36 +126,86 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 //      }
 //     return range;
 // }
-function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
-    const buttons:string[] = ["🎨Menu", "💰 Balance"]
+function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+    const buttons:string[][] = [["🎨Menu", "menu-page-1"], ["💰 Balance", "balance-page"]]
     for(let i=0; i<buttons.length; i++){
-        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+        range.submenu(buttons[i][0], buttons[i][1]);
     }
     return range;
 }
 
-const mainMenu: Menu<Context> = new Menu<Context>("main-menu");
-mainMenu.dynamic(mainMenuDynamicFunc).row().text(
+const rootOptions: Menu<Context> = new Menu<Context>("main-menu");
+rootOptions.dynamic(rootOptionsDynamicFunc).row().text(
     "➡️Next Image⬅️",
     (ctx)=> ctx.reply(`➡️Next Image⬅️ has been clicked`)
 );
 
-bot.use(mainMenu);
+function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+    const buttons:string[] = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
 
-bot.command("start", (ctx:CommandContext<Context>):void=>{
-    ctx.reply(
+    for(let i=0; i<buttons.length; i++){
+        if(i%2 == 1){
+            range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`)).row();
+            continue
+        }
+        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+        
+    }
+    return range;
+}
+const menuPage1: Menu<Context> = new Menu<Context>("menu-page-1");
+menuPage1.dynamic(menuPage1DynamicFunc).row()
+.submenu("Next >>", "menu-page-2").row()
+.back("⬅️ Back");
+
+
+function menuPage2DynamicFunc(_:Context, range:MenuRange<Context>):MenuRange<Context>{
+    const buttons: string[] = ["🎄 Christmas", "🎬 Movies", "🎲 Random", "✈️ Travel", "⚡️ Harry Potter", "🎸 Music", "😂 Meme", "💾 Retro", "🚹🚺 Set Sex", "👋🏻👋🏾 Set Skin Color"];
+    for(let i=0; i<buttons.length; i++){
+        if(i%2 === 1){
+            range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`)).row();
+            continue
+        }
+        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+    }
+
+    return range;
+}
+
+const menuPage2: Menu<Context> = new Menu<Context>("menu-page-2");
+menuPage2.dynamic(menuPage2DynamicFunc).row()
+.text(
+    "<< previous",
+    async (ctx)=>{
+        await ctx.menu.nav("menu-page-1", {immediate: true})
+    }
+).row()
+.text(
+    "⬅️ Back",
+    async (ctx)=>{
+        await ctx.menu.nav("main-menu", {immediate: true});
+    }
+);
+
+// rootOptions.register(menuPage1);
+// menuPage1.register(menuPage2);
+
+bot.use(rootOptions);
+
+bot.command("start", async (ctx:CommandContext<Context>)=>{
+    await ctx.reply(
         `Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`,
         {
             parse_mode: "Markdown"
         }
     );
 
-    ctx.reply(
+    await ctx.reply(
         `
         Create Your Custom Image:\n- Choose a style from the Menu.\n- Describe your dream photo, like 'with purple hair and a leather jacket'.\n- Or, upload a selfie for a new look!
         `,
         {
-            reply_markup: mainMenu,
+            reply_markup: rootOptions,
             parse_mode: "HTML"
         }
     )
