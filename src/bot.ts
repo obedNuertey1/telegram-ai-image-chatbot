@@ -187,8 +187,8 @@ menuPage2.dynamic(menuPage2DynamicFunc).row()
     }
 );
 
-// rootOptions.register(menuPage1);
-// menuPage1.register(menuPage2);
+rootOptions.register(menuPage1);
+menuPage1.register(menuPage2);
 
 bot.use(rootOptions);
 
