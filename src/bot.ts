@@ -1,6 +1,6 @@
 import {config} from "dotenv";
 import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard} from "grammy";
-import type{Variant as TextEffectVariant} from "./textEffects";
+// import type{Variant as TextEffectVariant} from "./textEffects";
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 
@@ -95,7 +95,7 @@ bot.command("error", (ctx:CommandContext<Context>)=>{
 })
 
 
-const labels = [
+export const labels = [
     "This is button1",
     "This is button2",
     "This is button3"
@@ -119,13 +119,6 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 });
 
 
-// function mainMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
-//     const buttons:string[] = ["🎨Menu", "💰 Balance"]
-//     for(let i=0; i<buttons.length; i++){
-//         range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
-//      }
-//     return range;
-// }
 function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[][] = [["🎨Menu", "menu-page-1"], ["💰 Balance", "balance-page"]]
     for(let i=0; i<buttons.length; i++){

@@ -1,8 +1,8 @@
 import {config} from "dotenv";
 import {Api, Bot, CommandContext, Context, InlineKeyboard, Keyboard, RawApi, session, webhookCallback} from "grammy";
-// import {chunk} from "lodash";
-import {applyTextEffect, Variant} from "./textEffects";
-import type{Variant as TextEffectVariant} from "./textEffects"
+import {chunk} from "lodash";
+import {applyTextEffect, Variant} from "textEffects.js";
+import type{Variant as TextEffectVariant} from "textEffects.js"
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 
