@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.labels = void 0;
+exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.rootOptionsDynamicFunc = exports.labels = void 0;
 const dotenv_1 = require("dotenv");
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
@@ -97,6 +97,7 @@ function rootOptionsDynamicFunc(_, range) {
     }
     return range;
 }
+exports.rootOptionsDynamicFunc = rootOptionsDynamicFunc;
 const rootOptions = new menu_1.Menu("main-menu");
 rootOptions.dynamic(rootOptionsDynamicFunc).row().text("➡️Next Image⬅️", (ctx) => ctx.reply(`➡️Next Image⬅️ has been clicked`));
 function menuPage1DynamicFunc(_, range) {
@@ -110,6 +111,7 @@ function menuPage1DynamicFunc(_, range) {
     }
     return range;
 }
+exports.menuPage1DynamicFunc = menuPage1DynamicFunc;
 const menuPage1 = new menu_1.Menu("menu-page-1");
 menuPage1.dynamic(menuPage1DynamicFunc).row()
     .submenu("Next >>", "menu-page-2").row()
@@ -125,6 +127,7 @@ function menuPage2DynamicFunc(_, range) {
     }
     return range;
 }
+exports.menuPage2DynamicFunc = menuPage2DynamicFunc;
 const menuPage2 = new menu_1.Menu("menu-page-2");
 menuPage2.dynamic(menuPage2DynamicFunc).row()
     .text("<< previous", async (ctx) => {

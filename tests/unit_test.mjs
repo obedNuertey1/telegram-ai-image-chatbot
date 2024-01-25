@@ -2,9 +2,9 @@ import { assert } from 'chai';
 import {labels} from "../dist/bot.js";
 
 
-suite('Unit Tests', ()=>{
-    suite("Compare Strings", function(){
-        test("This is just a sample test", function(){
+suite('Bot functions', ()=>{
+    suite("Keyboard keynames", function(){
+        test("Should be an array", function(){
             assert.isArray(labels);
         })
     })

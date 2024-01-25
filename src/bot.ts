@@ -119,7 +119,7 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 });
 
 
-function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+export function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[][] = [["🎨Menu", "menu-page-1"], ["💰 Balance", "balance-page"]]
     for(let i=0; i<buttons.length; i++){
         range.submenu(buttons[i][0], buttons[i][1]);
@@ -133,7 +133,7 @@ rootOptions.dynamic(rootOptionsDynamicFunc).row().text(
     (ctx)=> ctx.reply(`➡️Next Image⬅️ has been clicked`)
 );
 
-function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+export function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[] = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
 
     for(let i=0; i<buttons.length; i++){
@@ -152,7 +152,7 @@ menuPage1.dynamic(menuPage1DynamicFunc).row()
 .back("⬅️ Back");
 
 
-function menuPage2DynamicFunc(_:Context, range:MenuRange<Context>):MenuRange<Context>{
+export function menuPage2DynamicFunc(_:Context, range:MenuRange<Context>):MenuRange<Context>{
     const buttons: string[] = ["🎄 Christmas", "🎬 Movies", "🎲 Random", "✈️ Travel", "⚡️ Harry Potter", "🎸 Music", "😂 Meme", "💾 Retro", "🚹🚺 Set Sex", "👋🏻👋🏾 Set Skin Color"];
     for(let i=0; i<buttons.length; i++){
         if(i%2 === 1){
