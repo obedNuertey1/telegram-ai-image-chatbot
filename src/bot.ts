@@ -94,6 +94,7 @@ bot.command("error", (ctx:CommandContext<Context>)=>{
     )
 })
 
+const rootMenuText:string = `Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`;
 
 export const labels = [
     "This is button1",
@@ -118,12 +119,27 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
     )
 });
 
+// const balanceMenu:Menu<Context> = 
 
 export function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
-    const buttons:string[][] = [["🎨Menu", "menu-page-1"], ["💰 Balance", "balance-page"]]
+    const buttons:string[][] = [
+        ["🎨Menu", "menu-page-1"], 
+        // ["💰 Balance", "balance-page"]
+    ]
     for(let i=0; i<buttons.length; i++){
         range.submenu(buttons[i][0], buttons[i][1]);
     }
+
+    const editedMessageMarkup:string = `
+    Your current balance: 79 credits\n\n🌟 Buy Credits for More Magic! 🌟\n- More images: 1 Credit = 1 Image\n- No watermarks\n- Clear, unblurred images\n- Access to NSFW 🔞
+    `; 
+    range.text(
+        "💰 Balance", 
+        (ctx)=>{
+            ctx.menu.nav('balance-page')
+            ctx.editMessageText(editedMessageMarkup)
+        }
+    )
     return range;
 }
 
@@ -133,6 +149,28 @@ rootOptions.dynamic(rootOptionsDynamicFunc).row().text(
     (ctx)=> ctx.reply(`➡️Next Image⬅️ has been clicked`)
 );
 
+
+
+export function balanceMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+    const buttons:string[][] = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
+
+    for(let i=0; i < buttons.length; i++){
+        range.text(buttons[i][0], (ctx) => ctx.reply(`You clicked ${buttons[i][1]}`)).row()
+    }
+    return range;
+}
+
+const balanceMenu: Menu<Context> = new Menu<Context>('balance-page')
+.dynamic(balanceMenuDynamicFunc)
+.text(
+    "⬅️ Back",
+    (ctx)=>{
+        ctx.menu.nav("main-menu");
+        ctx.editMessageText(rootMenuText, {parse_mode: "Markdown"})
+    }
+);
+
+
 export function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[] = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
 
@@ -140,9 +178,8 @@ export function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):Menu
         if(i%2 == 1){
             range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`)).row();
             continue
-        }
+        }+
         range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
-        
     }
     return range;
 }
@@ -181,13 +218,14 @@ menuPage2.dynamic(menuPage2DynamicFunc).row()
 );
 
 rootOptions.register(menuPage1);
+rootOptions.register(balanceMenu);
 menuPage1.register(menuPage2);
 
 bot.use(rootOptions);
 
 bot.command("start", async (ctx:CommandContext<Context>)=>{
     await ctx.reply(
-        `Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`,
+        rootMenuText,
         {
             parse_mode: "Markdown"
         }
