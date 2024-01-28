@@ -1,6 +1,5 @@
 import {config} from "dotenv";
 import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard} from "grammy";
-// import type{Variant as TextEffectVariant} from "./textEffects";
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 
@@ -119,12 +118,35 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
     )
 });
 
-// const balanceMenu:Menu<Context> = 
+// Issue #18
+const paymentOptionMenu: Menu<Context> = new Menu<Context>("payment-option-menu")
+.dynamic((_:Context, range:MenuRange<Context>)=>{
+    const buttons:string[][] = [["🍎Apple Pay/🤖Google Pay", "Apple and Google"], ["💳PayPal", "paypal"]];
+
+
+    for(let i=0; i<buttons.length; i++){
+        range.text(buttons[i][0], (ctx)=>ctx.reply(buttons[i][1])).row()
+    }
+});
+bot.use(paymentOptionMenu)
+
+
+// Issue #18
+interface IreplyOptions{
+    parse_mode: string;
+    reply_markup: Menu<Context> | null;
+}
+// Issue #18
+export function replyInput(text:string, reply_markup:Menu<Context>|null=null, parse_mode:string='HTML'): (string | IreplyOptions)[]{
+    const options:IreplyOptions = {parse_mode, reply_markup}
+    return Object.values({text, options});
+}
+
+
 
 export function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[][] = [
-        ["🎨Menu", "menu-page-1"], 
-        // ["💰 Balance", "balance-page"]
+        ["🎨Menu", "menu-page-1"]
     ]
     for(let i=0; i<buttons.length; i++){
         range.submenu(buttons[i][0], buttons[i][1]);
@@ -150,12 +172,12 @@ rootOptions.dynamic(rootOptionsDynamicFunc).row().text(
 );
 
 
-
 export function balanceMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
     const buttons:string[][] = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
-
+    let replyItems: (string | IreplyOptions)[] = replyInput("Select a payment method:", paymentOptionMenu);// Issue #18
+    
     for(let i=0; i < buttons.length; i++){
-        range.text(buttons[i][0], (ctx) => ctx.reply(`You clicked ${buttons[i][1]}`)).row()
+        range.text(buttons[i][0], (ctx) => ctx.reply(replyItems[0] as string, replyItems[1] as any)).row()// Issue #18
     }
     return range;
 }

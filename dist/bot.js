@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.rootOptionsDynamicFunc = exports.labels = void 0;
+exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = void 0;
 const dotenv_1 = require("dotenv");
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
@@ -73,6 +73,7 @@ bot.command("error", (ctx) => {
         parse_mode: "HTML"
     });
 });
+const rootMenuText = `Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`;
 exports.labels = [
     "This is button1",
     "This is button2",
@@ -90,16 +91,53 @@ bot.command("removekeyboard", (ctx) => {
         reply_markup: { remove_keyboard: true }
     });
 });
+const paymentOptionMenu = new menu_1.Menu("payment-option-menu")
+    .dynamic((_, range) => {
+    const buttons = [["🍎Apple Pay/🤖Google Pay", "Apple and Google"], ["💳PayPal", "paypal"]];
+    for (let i = 0; i < buttons.length; i++) {
+        range.text(buttons[i][0], (ctx) => ctx.reply(buttons[i][1])).row();
+    }
+});
+bot.use(paymentOptionMenu);
+function replyInput(text, reply_markup = null, parse_mode = 'HTML') {
+    const options = { parse_mode, reply_markup };
+    return Object.values({ text, options });
+}
+exports.replyInput = replyInput;
 function rootOptionsDynamicFunc(_, range) {
-    const buttons = [["🎨Menu", "menu-page-1"], ["💰 Balance", "balance-page"]];
+    const buttons = [
+        ["🎨Menu", "menu-page-1"]
+    ];
     for (let i = 0; i < buttons.length; i++) {
         range.submenu(buttons[i][0], buttons[i][1]);
     }
+    const editedMessageMarkup = `
+    Your current balance: 79 credits\n\n🌟 Buy Credits for More Magic! 🌟\n- More images: 1 Credit = 1 Image\n- No watermarks\n- Clear, unblurred images\n- Access to NSFW 🔞
+    `;
+    range.text("💰 Balance", (ctx) => {
+        ctx.menu.nav('balance-page');
+        ctx.editMessageText(editedMessageMarkup);
+    });
     return range;
 }
 exports.rootOptionsDynamicFunc = rootOptionsDynamicFunc;
 const rootOptions = new menu_1.Menu("main-menu");
 rootOptions.dynamic(rootOptionsDynamicFunc).row().text("➡️Next Image⬅️", (ctx) => ctx.reply(`➡️Next Image⬅️ has been clicked`));
+function balanceMenuDynamicFunc(_, range) {
+    const buttons = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
+    let replyItems = replyInput("Select a payment method:", paymentOptionMenu);
+    for (let i = 0; i < buttons.length; i++) {
+        range.text(buttons[i][0], (ctx) => ctx.reply(replyItems[0], replyItems[1])).row();
+    }
+    return range;
+}
+exports.balanceMenuDynamicFunc = balanceMenuDynamicFunc;
+const balanceMenu = new menu_1.Menu('balance-page')
+    .dynamic(balanceMenuDynamicFunc)
+    .text("⬅️ Back", (ctx) => {
+    ctx.menu.nav("main-menu");
+    ctx.editMessageText(rootMenuText, { parse_mode: "Markdown" });
+});
 function menuPage1DynamicFunc(_, range) {
     const buttons = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
     for (let i = 0; i < buttons.length; i++) {
@@ -107,7 +145,7 @@ function menuPage1DynamicFunc(_, range) {
             range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`)).row();
             continue;
         }
-        range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`));
+        +range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`));
     }
     return range;
 }
@@ -137,10 +175,11 @@ menuPage2.dynamic(menuPage2DynamicFunc).row()
     await ctx.menu.nav("main-menu", { immediate: true });
 });
 rootOptions.register(menuPage1);
+rootOptions.register(balanceMenu);
 menuPage1.register(menuPage2);
 bot.use(rootOptions);
 bot.command("start", async (ctx) => {
-    await ctx.reply(`Create AI masterpieces from selfies with [Ubaid AI](https://not-found-random-names.com) on Android and IOS. Explore 🚀[Ubaid AI](https://not-found-random-names.com)`, {
+    await ctx.reply(rootMenuText, {
         parse_mode: "Markdown"
     });
     await ctx.reply(`
