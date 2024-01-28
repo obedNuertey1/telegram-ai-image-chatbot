@@ -1,5 +1,5 @@
 # This is a template for developing typescript node apis
-* resolve issue #1, #19, #20
+* resolve issue #1, #19, #20, #21
 # Running Tests
 - All tests are found in the ./tests directory. All test files must have **.mjs** extension
 - type `./runtests.bat` in a windows command line or type `./runtests.sh` in a unix command line to run the tests.
