@@ -56,6 +56,7 @@ Commands
 /error - Tap /error if you see anything wrong
 `);
 
+
 bot.api.setMyCommands([
     {command: "start", description: "starts the bot (usage: /start [text])"},
     {command: "yo", description: "Be greeted by the bot"},
@@ -177,6 +178,15 @@ export function balanceMenuDynamicFunc(_: Context, range: MenuRange<Context>):Me
     let replyItems: (string | IreplyOptions)[] = replyInput("Select a payment method:", paymentOptionMenu);// Issue #18
     
     for(let i=0; i < buttons.length; i++){
+        if(buttons[i][1] == "free"){
+            range.text(buttons[i][0], (ctx) => ctx.reply(
+                `🎉 Earn 10 credits for every friend you invite!\n\n🌟 Share this link: https://t.me/obd_sample_bot?start=referral_${ctx.from?.id}`,
+                {
+                    parse_mode: "HTML"
+                }
+            )).row()
+            continue;
+        }
         range.text(buttons[i][0], (ctx) => ctx.reply(replyItems[0] as string, replyItems[1] as any)).row()// Issue #18
     }
     return range;
@@ -246,6 +256,8 @@ menuPage1.register(menuPage2);
 bot.use(rootOptions);
 
 bot.command("start", async (ctx:CommandContext<Context>)=>{
+    console.log(ctx);
+    console.log(ctx.from);
     await ctx.reply(
         rootMenuText,
         {
