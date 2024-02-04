@@ -5,6 +5,8 @@ import {applyTextEffect, Variant} from "./textEffects";
 import type{Variant as TextEffectVariant} from "./textEffects";
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
+import { FileFlavor, hydrateFiles } from "@grammyjs/files";
+import fs from 'fs';
 
 config();
 
@@ -12,10 +14,51 @@ interface SessionData{
     pizzaCount: number;
 }
 
-type MyContext = Context & SessionFlavor<SessionData>;
-
+type MyContext2 = FileFlavor<Context> & Context;
+type MyContext = MyContext2 & SessionFlavor<SessionData>;
 // Create a bot using the Telegram token
-const bot:Bot<MyContext, Api<RawApi>> = new Bot(process.env.BOT_TOKEN || "");
+const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+
+bot.api.config.use(hydrateFiles(bot.token));
+
+bot.on([":photo", ":video", ":animation"], async (ctx)=>{
+    const path2:string = await downloadFile({ctx, isUrl:true});
+    const path:string = await downloadFile({ctx, path:'\\tmp\\assets'});
+    console.log(path);
+    console.log(path2);
+})
+
+async function downloadFile({ctx, isUrl=false, path=""}:any){
+
+    try{
+        if(isUrl){// return the telegram url to the uploaded file
+            const file = await ctx.getFile();
+            return await file.getUrl();
+        }
+
+        path = editPath(path);
+        if(!fs.existsSync(`${__dirname}${path}`)){
+            fs.mkdirSync(`${__dirname}${path}`, {recursive: true})
+        }
+        const file = await ctx.getFile();
+        const fileRegex = /.*(\..*)/;
+        let ctxFilePath = file?.file_path;
+        let extension = ctxFilePath.match(fileRegex)[1];
+        const downloadPath = await file.download(`${__dirname}${path}\\${ctx?.from?.id}${extension}`);
+        return downloadPath;
+    }catch(e){
+        throw new Error(e.message);
+    }
+}
+
+function editPath(path:string):string{// Removes ./ and / and replaces with \ and returns path
+    if(path.includes("./")||path.includes("/")){
+        return path.replace(/\.\/|\//g, '\\');
+    }
+    return path;
+}
+
+
 
 // Install session middleware, and define the initial session value.
 function initial():SessionData{

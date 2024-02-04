@@ -3,16 +3,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = void 0;
+exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.sendPhoto = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = void 0;
 const dotenv_1 = require("dotenv");
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
 const menu_1 = require("@grammyjs/menu");
+const files_1 = require("@grammyjs/files");
+const FileHandling_1 = __importDefault(require("./FileHandling"));
+const fs_1 = __importDefault(require("fs"));
 (0, dotenv_1.config)();
 const bot = new grammy_1.Bot(process.env.BOT_TOKEN || "");
+bot.api.config.use((0, files_1.hydrateFiles)(bot.token));
+function initial() {
+    return { pizzaCount: 0 };
+}
+bot.use((0, grammy_1.session)({ initial }));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, grammy_1.webhookCallback)(bot, "express"));
+const FILE_PATH = "\\tmp\\assets";
 const introductionMessage = `
 <strong>This telegram bot is still under development</strong>
 
@@ -58,6 +67,24 @@ bot.api.setMyCommands([
     { command: "customkeyboard", description: "Start custom Keyboard (usage: /customkeyboard [text])" },
     { command: "removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])" },
 ]);
+bot.on([":photo", ":video", ":animation"], async (ctx) => {
+    const fileOptions = {
+        ctx: ctx,
+        isUrl: false,
+        path: FILE_PATH
+    };
+    const myFile = new FileHandling_1.default.FileHandle(fileOptions);
+    const path2 = await myFile.downloadFile();
+    console.log(path2);
+});
+bot.command("hunger", async (ctx) => {
+    const count = ctx.session.pizzaCount;
+    await ctx.reply(`Your hunger level is ${count}!`);
+});
+bot.hears(/.*🍕.*/, (ctx) => {
+    ctx.session.pizzaCount++;
+    ctx.reply("I hear you");
+});
 bot.command("yo", (ctx) => {
     const randIndex = Math.floor(Math.random() * randomMessages.length);
     console.log(ctx.message.text);
@@ -127,6 +154,12 @@ function balanceMenuDynamicFunc(_, range) {
     const buttons = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
     let replyItems = replyInput("Select a payment method:", paymentOptionMenu);
     for (let i = 0; i < buttons.length; i++) {
+        if (buttons[i][1] == "free") {
+            range.text(buttons[i][0], (ctx) => ctx.reply(`🎉 Earn 10 credits for every friend you invite!\n\n🌟 Share this link: https://t.me/obd_sample_bot?start=referral_${ctx.from?.id}`, {
+                parse_mode: "HTML"
+            })).row();
+            continue;
+        }
         range.text(buttons[i][0], (ctx) => ctx.reply(replyItems[0], replyItems[1])).row();
     }
     return range;
@@ -138,14 +171,52 @@ const balanceMenu = new menu_1.Menu('balance-page')
     ctx.menu.nav("main-menu");
     ctx.editMessageText(rootMenuText, { parse_mode: "Markdown" });
 });
+async function sendPhoto(ctx) {
+    try {
+        let userId = (ctx?.from.id).toString();
+        let file1 = `${__dirname}${FILE_PATH}\\${userId}.jpg`;
+        console.log(`fs.existsSync(file1)=${fs_1.default.existsSync(file1)}`);
+        if (!fs_1.default.existsSync(file1)) {
+            file1 = `${__dirname}${FILE_PATH}\\${userId}.png`;
+        }
+        if (!fs_1.default.existsSync(file1)) {
+            file1 = `${__dirname}${FILE_PATH}\\${userId}.jpeg`;
+        }
+        if (!fs_1.default.existsSync(file1)) {
+            return false;
+        }
+        const photo = grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(file1), {
+            caption: `${ctx?.from.first_name} this is the image you served earlier`
+        });
+        await ctx.reply('loading...');
+        await ctx.replyWithMediaGroup([photo]);
+        return file1;
+    }
+    catch (e) {
+        throw new Error(e.message);
+    }
+}
+exports.sendPhoto = sendPhoto;
 function menuPage1DynamicFunc(_, range) {
     const buttons = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
     for (let i = 0; i < buttons.length; i++) {
         if (i % 2 == 1) {
-            range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`)).row();
+            range.text(buttons[i], async (ctx) => {
+                let photo = await sendPhoto(ctx);
+                if (!photo) {
+                    return ctx.reply(`Please upload an image and continue`);
+                }
+                await ctx.reply(`${buttons[i]} has been clicked`);
+            }).row();
             continue;
         }
-        +range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`));
+        range.text(buttons[i], async (ctx) => {
+            let photo = await sendPhoto(ctx);
+            if (!photo) {
+                return ctx.reply(`Please upload an image and continue`);
+            }
+            await ctx.reply(`${buttons[i]} has been clicked`);
+        });
     }
     return range;
 }
@@ -158,10 +229,22 @@ function menuPage2DynamicFunc(_, range) {
     const buttons = ["🎄 Christmas", "🎬 Movies", "🎲 Random", "✈️ Travel", "⚡️ Harry Potter", "🎸 Music", "😂 Meme", "💾 Retro", "🚹🚺 Set Sex", "👋🏻👋🏾 Set Skin Color"];
     for (let i = 0; i < buttons.length; i++) {
         if (i % 2 === 1) {
-            range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`)).row();
+            range.text(buttons[i], async (ctx) => {
+                let photo = await sendPhoto(ctx);
+                if (!photo) {
+                    return ctx.reply(`Please upload an image and continue`);
+                }
+                await ctx.reply(`${buttons[i]} has been clicked`);
+            }).row();
             continue;
         }
-        range.text(buttons[i], (ctx) => ctx.reply(`${buttons[i]} has been clicked`));
+        range.text(buttons[i], async (ctx) => {
+            let photo = await sendPhoto(ctx);
+            if (!photo) {
+                return ctx.reply(`Please upload an image and continue`);
+            }
+            ctx.reply(`${buttons[i]} has been clicked`);
+        });
     }
     return range;
 }
@@ -179,6 +262,8 @@ rootOptions.register(balanceMenu);
 menuPage1.register(menuPage2);
 bot.use(rootOptions);
 bot.command("start", async (ctx) => {
+    console.log(ctx);
+    console.log(ctx.from);
     await ctx.reply(rootMenuText, {
         parse_mode: "Markdown"
     });

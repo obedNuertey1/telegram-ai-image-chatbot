@@ -1,16 +1,47 @@
 import {config} from "dotenv";
-import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard} from "grammy";
+import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard, SessionFlavor, session, InputMediaBuilder, InputFile} from "grammy";
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
+import { FileFlavor, hydrateFiles } from "@grammyjs/files";
+import FileHandling from "./FileHandling";
+import fs from "fs";
 
 config();
 
-const bot:Bot<Context, Api<RawApi>> = new Bot(process.env.BOT_TOKEN || "");
+// interface SessionData{
+//     pizzaCount: number;
+// }
+
+// type SessionType = Context & SessionFlavor<Context>;
+// type FileFlavWithSession = FileFlavor<Context> & SessionType;
+
+// const bot = new Bot<FileFlavWithSession>(process.env.BOT_TOKEN || "");
+// bot.api.config.use(hydrateFiles(bot.token));
+
+interface SessionData{
+    pizzaCount: number;
+}
+
+type MyContext2 = FileFlavor<Context> & Context;
+type MyContext = MyContext2 & SessionFlavor<SessionData>;
+// Create a bot using the Telegram token
+const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+
+bot.api.config.use(hydrateFiles(bot.token));
+
+
+// Install session middleware, and define the initial session value.
+function initial():SessionData{
+    return {pizzaCount: 0};
+}
+bot.use(session({initial}));
 
 const app = express();
 app.use(express.json());
 app.use(webhookCallback(bot, "express"));
 
+
+const FILE_PATH = "\\tmp\\assets";
 
 
 const introductionMessage:string = `
@@ -65,8 +96,31 @@ bot.api.setMyCommands([
     {command: "removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])"},
 ])
 
+bot.on([":photo", ":video", ":animation"], async (ctx)=>{
+    const fileOptions: FileHandling.iFileHandle<MyContext> = {
+        ctx: ctx,
+        isUrl: false,
+        path: FILE_PATH
+    }
 
-bot.command("yo", (ctx:CommandContext<Context>):void=>{
+    const myFile = new FileHandling.FileHandle(fileOptions);
+    const path2:string = await myFile.downloadFile();
+    console.log(path2);
+})
+
+bot.command("hunger", async (ctx)=>{
+    const count = ctx.session.pizzaCount;
+    // console.log(ctx?.from);
+    // console.log(ctx?.session);
+    await ctx.reply(`Your hunger level is ${count}!`);
+});
+
+bot.hears(/.*🍕.*/, (ctx)=>{
+    ctx.session.pizzaCount++;
+    ctx.reply("I hear you");
+});
+
+bot.command("yo", (ctx:CommandContext<MyContext>):void=>{
     const randIndex:number = Math.floor(Math.random() * randomMessages.length);
 
     console.log(ctx.message.text);
@@ -82,7 +136,7 @@ const issuesURLKeyboard:InlineKeyboard = new InlineKeyboard()
 )
 
 
-bot.command("error", (ctx:CommandContext<Context>)=>{
+bot.command("error", (ctx:CommandContext<MyContext>)=>{
     ctx.reply(
         `
         <strong><i>${ctx.from?.first_name} Please visit the link below to tell me about the problem by creating an issue on this particular github project</i></strong>
@@ -104,13 +158,13 @@ export const labels = [
 const keyboardButtons = labels.map((label)=> [Keyboard.text(label)])
 const keyboard:Keyboard = Keyboard.from(keyboardButtons).resized().oneTime().placeholder("This is custom keyboard");
 
-bot.command("customkeyboard", (ctx:CommandContext<Context>)=>{
+bot.command("customkeyboard", (ctx:CommandContext<MyContext>)=>{
     ctx.reply("Opened Custom Keyboard", {
         reply_markup: keyboard
     });
 });
 
-bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
+bot.command("removekeyboard", (ctx:CommandContext<MyContext>)=>{
     ctx.reply(
         `Removed custom keyboard`,
         {
@@ -120,8 +174,8 @@ bot.command("removekeyboard", (ctx:CommandContext<Context>)=>{
 });
 
 // Issue #18
-const paymentOptionMenu: Menu<Context> = new Menu<Context>("payment-option-menu")
-.dynamic((_:Context, range:MenuRange<Context>)=>{
+const paymentOptionMenu: Menu<MyContext> = new Menu<MyContext>("payment-option-menu")
+.dynamic((_:MyContext, range:MenuRange<MyContext>)=>{
     const buttons:string[][] = [["🍎Apple Pay/🤖Google Pay", "Apple and Google"], ["💳PayPal", "paypal"]];
 
 
@@ -135,17 +189,17 @@ bot.use(paymentOptionMenu)
 // Issue #18
 interface IreplyOptions{
     parse_mode: string;
-    reply_markup: Menu<Context> | null;
+    reply_markup: Menu<MyContext> | null;
 }
 // Issue #18
-export function replyInput(text:string, reply_markup:Menu<Context>|null=null, parse_mode:string='HTML'): (string | IreplyOptions)[]{
+export function replyInput(text:string, reply_markup:Menu<MyContext>|null=null, parse_mode:string='HTML'): (string | IreplyOptions)[]{
     const options:IreplyOptions = {parse_mode, reply_markup}
     return Object.values({text, options});
 }
 
 
 
-export function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+export function rootOptionsDynamicFunc(_: MyContext, range: MenuRange<MyContext>):MenuRange<MyContext>{
     const buttons:string[][] = [
         ["🎨Menu", "menu-page-1"]
     ]
@@ -166,14 +220,14 @@ export function rootOptionsDynamicFunc(_: Context, range: MenuRange<Context>):Me
     return range;
 }
 
-const rootOptions: Menu<Context> = new Menu<Context>("main-menu");
+const rootOptions: Menu<MyContext> = new Menu<MyContext>("main-menu");
 rootOptions.dynamic(rootOptionsDynamicFunc).row().text(
     "➡️Next Image⬅️",
     (ctx)=> ctx.reply(`➡️Next Image⬅️ has been clicked`)
 );
 
 
-export function balanceMenuDynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+export function balanceMenuDynamicFunc(_: MyContext, range: MenuRange<MyContext>):MenuRange<MyContext>{
     const buttons:string[][] = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
     let replyItems: (string | IreplyOptions)[] = replyInput("Select a payment method:", paymentOptionMenu);// Issue #18
     
@@ -192,7 +246,7 @@ export function balanceMenuDynamicFunc(_: Context, range: MenuRange<Context>):Me
     return range;
 }
 
-const balanceMenu: Menu<Context> = new Menu<Context>('balance-page')
+const balanceMenu: Menu<MyContext> = new Menu<MyContext>('balance-page')
 .dynamic(balanceMenuDynamicFunc)
 .text(
     "⬅️ Back",
@@ -203,38 +257,92 @@ const balanceMenu: Menu<Context> = new Menu<Context>('balance-page')
 );
 
 
-export function menuPage1DynamicFunc(_: Context, range: MenuRange<Context>):MenuRange<Context>{
+export async function sendPhoto(ctx: MyContext){
+    try{
+        let userId = (ctx?.from.id).toString();
+        let file1 = `${__dirname}${FILE_PATH}\\${userId}.jpg`;
+
+        console.log(`fs.existsSync(file1)=${fs.existsSync(file1)}`);
+        if(!fs.existsSync(file1)){
+            file1 = `${__dirname}${FILE_PATH}\\${userId}.png`;
+        }
+
+        if(!fs.existsSync(file1)){
+            file1 = `${__dirname}${FILE_PATH}\\${userId}.jpeg`;
+        }
+
+        if(!fs.existsSync(file1)){
+            return false
+        }
+    
+        const photo = InputMediaBuilder.photo(new InputFile(file1), {
+            caption: `${ctx?.from.first_name} this is the image you served earlier`
+        });
+        await ctx.reply('loading...');
+        await ctx.replyWithMediaGroup([photo]);
+        return file1;
+    }catch(e){
+        throw new Error(e.message);
+    }
+}
+
+export function menuPage1DynamicFunc(_: MyContext, range: MenuRange<MyContext>):MenuRange<MyContext>{
     const buttons:string[] = ["❤️ Romantic", "👗 Fashion", "🌟 Celebrity", "🏀 Sport", "🍿 Bollywood", "🕉 Hindu", "🕌 Muslim", "🌍 World Culture", "🍎 School", "🔥🔞 NSFW"];
+
 
     for(let i=0; i<buttons.length; i++){
         if(i%2 == 1){
-            range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`)).row();
+            range.text(buttons[i], async (ctx)=>{
+                let photo = await sendPhoto(ctx);
+                if(!photo){
+                    return ctx.reply(`Please upload an image and continue`);
+                }
+                await ctx.reply(`${buttons[i]} has been clicked`)
+            }).row();
             continue
-        }+
-        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+        }
+        range.text(buttons[i], async (ctx)=> {
+            let photo = await sendPhoto(ctx);
+            if(!photo){
+                return ctx.reply(`Please upload an image and continue`);
+            }
+            await ctx.reply(`${buttons[i]} has been clicked`)
+        });
     }
     return range;
 }
-const menuPage1: Menu<Context> = new Menu<Context>("menu-page-1");
+const menuPage1: Menu<MyContext> = new Menu<MyContext>("menu-page-1");
 menuPage1.dynamic(menuPage1DynamicFunc).row()
 .submenu("Next >>", "menu-page-2").row()
 .back("⬅️ Back");
 
 
-export function menuPage2DynamicFunc(_:Context, range:MenuRange<Context>):MenuRange<Context>{
+export function menuPage2DynamicFunc(_:MyContext, range:MenuRange<MyContext>):MenuRange<MyContext>{
     const buttons: string[] = ["🎄 Christmas", "🎬 Movies", "🎲 Random", "✈️ Travel", "⚡️ Harry Potter", "🎸 Music", "😂 Meme", "💾 Retro", "🚹🚺 Set Sex", "👋🏻👋🏾 Set Skin Color"];
     for(let i=0; i<buttons.length; i++){
         if(i%2 === 1){
-            range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`)).row();
+            range.text(buttons[i], async (ctx)=>{
+                let photo = await sendPhoto(ctx);
+                if(!photo){
+                    return ctx.reply(`Please upload an image and continue`);
+                }
+                await ctx.reply(`${buttons[i]} has been clicked`);
+            }).row();
             continue
         }
-        range.text(buttons[i], (ctx)=> ctx.reply(`${buttons[i]} has been clicked`));
+        range.text(buttons[i], async (ctx)=> {
+            let photo = await sendPhoto(ctx);
+            if(!photo){
+                return ctx.reply(`Please upload an image and continue`);
+            }
+            ctx.reply(`${buttons[i]} has been clicked`)
+        });
     }
 
     return range;
 }
 
-const menuPage2: Menu<Context> = new Menu<Context>("menu-page-2");
+const menuPage2: Menu<MyContext> = new Menu<MyContext>("menu-page-2");
 menuPage2.dynamic(menuPage2DynamicFunc).row()
 .text(
     "<< previous",
@@ -255,7 +363,7 @@ menuPage1.register(menuPage2);
 
 bot.use(rootOptions);
 
-bot.command("start", async (ctx:CommandContext<Context>)=>{
+bot.command("start", async (ctx:CommandContext<MyContext>)=>{
     console.log(ctx);
     console.log(ctx.from);
     await ctx.reply(
