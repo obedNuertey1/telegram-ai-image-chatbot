@@ -8,16 +8,6 @@ import fs from "fs";
 
 config();
 
-// interface SessionData{
-//     pizzaCount: number;
-// }
-
-// type SessionType = Context & SessionFlavor<Context>;
-// type FileFlavWithSession = FileFlavor<Context> & SessionType;
-
-// const bot = new Bot<FileFlavWithSession>(process.env.BOT_TOKEN || "");
-// bot.api.config.use(hydrateFiles(bot.token));
-
 interface SessionData{
     pizzaCount: number;
 }
