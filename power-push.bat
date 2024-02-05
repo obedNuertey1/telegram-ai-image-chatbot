@@ -1,5 +1,5 @@
-echo "Enter commit message: \n"
-read COMMIT_MESSAGE
-call git add .
-call git commit -m $COMMIT_MESSAGE
-call git push
+@echo off
+$commitMessage = Read-Host "Enter commit message: "
+git add .
+git commit -m $COMMIT_MESSAGE
+git push
