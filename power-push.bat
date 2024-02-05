@@ -1,4 +1,11 @@
-$commitMessage = Read-Host "Enter commit message: "
+# Prompt for commit message
+$commitMessage = Read-Host "Enter commit message"
+
+# Stage all changes
 git add .
-git commit -m $COMMIT_MESSAGE
+
+# Commit changes with the specified message
+git commit -m $commitMessage
+
+# Push changes to the remote repository
 git push
