@@ -3,13 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.sendPhoto = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = void 0;
+exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.sendPhoto = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = exports.FILE_PATH = exports.initial = void 0;
 const dotenv_1 = require("dotenv");
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
 const menu_1 = require("@grammyjs/menu");
 const files_1 = require("@grammyjs/files");
-const FileHandling_1 = __importDefault(require("./FileHandling"));
+const FileHandling_1 = __importDefault(require("./namespaces/FileHandling"));
 const fs_1 = __importDefault(require("fs"));
 (0, dotenv_1.config)();
 const bot = new grammy_1.Bot(process.env.BOT_TOKEN || "");
@@ -17,11 +17,12 @@ bot.api.config.use((0, files_1.hydrateFiles)(bot.token));
 function initial() {
     return { pizzaCount: 0 };
 }
+exports.initial = initial;
 bot.use((0, grammy_1.session)({ initial }));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, grammy_1.webhookCallback)(bot, "express"));
-const FILE_PATH = "\\tmp\\assets";
+exports.FILE_PATH = "\\tmp\\assets";
 const introductionMessage = `
 <strong>This telegram bot is still under development</strong>
 
@@ -71,7 +72,7 @@ bot.on([":photo", ":video", ":animation"], async (ctx) => {
     const fileOptions = {
         ctx: ctx,
         isUrl: false,
-        path: FILE_PATH
+        path: exports.FILE_PATH
     };
     const myFile = new FileHandling_1.default.FileHandle(fileOptions);
     const path2 = await myFile.downloadFile();
@@ -128,6 +129,7 @@ const paymentOptionMenu = new menu_1.Menu("payment-option-menu")
 bot.use(paymentOptionMenu);
 function replyInput(text, reply_markup = null, parse_mode = 'HTML') {
     const options = { parse_mode, reply_markup };
+    console.log(Object.values({ text, options }));
     return Object.values({ text, options });
 }
 exports.replyInput = replyInput;
@@ -174,13 +176,13 @@ const balanceMenu = new menu_1.Menu('balance-page')
 async function sendPhoto(ctx) {
     try {
         let userId = (ctx?.from.id).toString();
-        let file1 = `${__dirname}${FILE_PATH}\\${userId}.jpg`;
+        let file1 = `${__dirname}${exports.FILE_PATH}\\${userId}.jpg`;
         console.log(`fs.existsSync(file1)=${fs_1.default.existsSync(file1)}`);
         if (!fs_1.default.existsSync(file1)) {
-            file1 = `${__dirname}${FILE_PATH}\\${userId}.png`;
+            file1 = `${__dirname}${exports.FILE_PATH}\\${userId}.png`;
         }
         if (!fs_1.default.existsSync(file1)) {
-            file1 = `${__dirname}${FILE_PATH}\\${userId}.jpeg`;
+            file1 = `${__dirname}${exports.FILE_PATH}\\${userId}.jpeg`;
         }
         if (!fs_1.default.existsSync(file1)) {
             return false;

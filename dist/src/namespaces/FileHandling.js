@@ -33,7 +33,7 @@ var FileHandling;
                 return downloadPath;
             }
             catch (e) {
-                throw new Error(e.message);
+                console.error(e.message);
             }
         }
         editPath(path) {

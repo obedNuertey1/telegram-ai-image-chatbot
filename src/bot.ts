@@ -3,7 +3,7 @@ import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, In
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
-import FileHandling from "./FileHandling";
+import FileHandling from "./namespaces/FileHandling";
 import fs from "fs";
 
 config();
@@ -21,7 +21,7 @@ bot.api.config.use(hydrateFiles(bot.token));
 
 
 // Install session middleware, and define the initial session value.
-function initial():SessionData{
+export function initial():SessionData{
     return {pizzaCount: 0};
 }
 bot.use(session({initial}));
@@ -31,7 +31,7 @@ app.use(express.json());
 app.use(webhookCallback(bot, "express"));
 
 
-const FILE_PATH = "\\tmp\\assets";
+export const FILE_PATH = "\\tmp\\assets";
 
 
 const introductionMessage:string = `
@@ -184,6 +184,7 @@ interface IreplyOptions{
 // Issue #18
 export function replyInput(text:string, reply_markup:Menu<MyContext>|null=null, parse_mode:string='HTML'): (string | IreplyOptions)[]{
     const options:IreplyOptions = {parse_mode, reply_markup}
+    console.log(Object.values({text, options}));
     return Object.values({text, options});
 }
 

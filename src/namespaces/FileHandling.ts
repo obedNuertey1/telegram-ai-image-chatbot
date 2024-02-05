@@ -22,9 +22,39 @@ namespace FileHandling{
             this.isUrl = isUrl;
             this.path = path;
         }
+
+
+        // private setCtx(ctx:any):void{
+        //     this.ctx = ctx;
+        // }
+
+        // private getCtx():any{
+        //     return this.ctx;
+        // }
+
+
+        // private setIsUrl(isUrl:boolean):void{
+        //     this.isUrl = isUrl;
+        // }
+
+        // private getIsUrl():boolean{
+        //     return this.isUrl;
+        // }
+
+
+
+        // private setPath(path:string):void{
+        //     this.path = path;
+        // }
+
+        // private getPath():string{
+        //     return this.path;
+        // }
+
+
     
         public async downloadFile(){
-    
+
             try{
                 if(this.isUrl){// return the telegram url to the uploaded file
                     const file = await this.ctx.getFile();
@@ -42,7 +72,8 @@ namespace FileHandling{
                 const downloadPath = await file.download(`${__dirname}${this.path}\\${this.ctx?.from?.id}${extension}`);
                 return downloadPath;
             }catch(e){
-                throw new Error(e.message);
+                // throw new Error(e.message);
+                console.error(e.message);
             }
         }
         
