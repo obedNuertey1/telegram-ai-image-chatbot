@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.sendPhoto = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.labels = exports.FILE_PATH = exports.initial = void 0;
+exports.menuPage2DynamicFunc = exports.menuPage1DynamicFunc = exports.sendPhoto = exports.balanceMenuDynamicFunc = exports.rootOptionsDynamicFunc = exports.replyInput = exports.paymentOptionMenu = exports.labels = exports.FILE_PATH = exports.initial = void 0;
 const dotenv_1 = require("dotenv");
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
@@ -119,14 +119,14 @@ bot.command("removekeyboard", (ctx) => {
         reply_markup: { remove_keyboard: true }
     });
 });
-const paymentOptionMenu = new menu_1.Menu("payment-option-menu")
+exports.paymentOptionMenu = new menu_1.Menu("payment-option-menu")
     .dynamic((_, range) => {
     const buttons = [["🍎Apple Pay/🤖Google Pay", "Apple and Google"], ["💳PayPal", "paypal"]];
     for (let i = 0; i < buttons.length; i++) {
         range.text(buttons[i][0], (ctx) => ctx.reply(buttons[i][1])).row();
     }
 });
-bot.use(paymentOptionMenu);
+bot.use(exports.paymentOptionMenu);
 function replyInput(text, reply_markup = null, parse_mode = 'HTML') {
     const options = { parse_mode, reply_markup };
     console.log(Object.values({ text, options }));
@@ -154,7 +154,7 @@ const rootOptions = new menu_1.Menu("main-menu");
 rootOptions.dynamic(rootOptionsDynamicFunc).row().text("➡️Next Image⬅️", (ctx) => ctx.reply(`➡️Next Image⬅️ has been clicked`));
 function balanceMenuDynamicFunc(_, range) {
     const buttons = [["🔥 Lifetime Unlimited - $29.99 🔥", "$29.99"], ["200 credits - $19.99", "$19.99"], ["50 credits - $9.99", "$9.99"], ["🎁 Get 10 free credits", "free"]];
-    let replyItems = replyInput("Select a payment method:", paymentOptionMenu);
+    let replyItems = replyInput("Select a payment method:", exports.paymentOptionMenu);
     for (let i = 0; i < buttons.length; i++) {
         if (buttons[i][1] == "free") {
             range.text(buttons[i][0], (ctx) => ctx.reply(`🎉 Earn 10 credits for every friend you invite!\n\n🌟 Share this link: https://t.me/obd_sample_bot?start=referral_${ctx.from?.id}`, {

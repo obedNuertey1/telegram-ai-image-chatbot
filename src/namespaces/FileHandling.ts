@@ -14,8 +14,8 @@ namespace FileHandling{
     
     export class FileHandle implements iFileHandle<any>{
         public ctx:any;
-        public isUrl:boolean;
-        public path:string;
+        public isUrl:boolean = false;
+        public path:string = "";
 
         constructor({ctx, isUrl=false, path=""}){
             this.ctx = ctx;

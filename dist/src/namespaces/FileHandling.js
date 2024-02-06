@@ -8,8 +8,8 @@ var FileHandling;
 (function (FileHandling) {
     class FileHandle {
         ctx;
-        isUrl;
-        path;
+        isUrl = false;
+        path = "";
         constructor({ ctx, isUrl = false, path = "" }) {
             this.ctx = ctx;
             this.isUrl = isUrl;

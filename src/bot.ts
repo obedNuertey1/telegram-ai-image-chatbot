@@ -13,7 +13,7 @@ interface SessionData{
 }
 
 type MyContext2 = FileFlavor<Context> & Context;
-type MyContext = MyContext2 & SessionFlavor<SessionData>;
+export type MyContext = MyContext2 & SessionFlavor<SessionData>;
 // Create a bot using the Telegram token
 const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
 
@@ -32,6 +32,7 @@ app.use(webhookCallback(bot, "express"));
 
 
 export const FILE_PATH = "\\tmp\\assets";
+// export const FILE_PATH = "..\\src\\temp\\assets";
 
 
 const introductionMessage:string = `
@@ -164,7 +165,7 @@ bot.command("removekeyboard", (ctx:CommandContext<MyContext>)=>{
 });
 
 // Issue #18
-const paymentOptionMenu: Menu<MyContext> = new Menu<MyContext>("payment-option-menu")
+export const paymentOptionMenu: Menu<MyContext> = new Menu<MyContext>("payment-option-menu")
 .dynamic((_:MyContext, range:MenuRange<MyContext>)=>{
     const buttons:string[][] = [["🍎Apple Pay/🤖Google Pay", "Apple and Google"], ["💳PayPal", "paypal"]];
 
