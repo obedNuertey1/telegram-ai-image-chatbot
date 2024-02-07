@@ -5,28 +5,27 @@ import {Menu, MenuRange} from "@grammyjs/menu";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
 import FileHandling from "./namespaces/FileHandling";
 import fs from "fs";
-// import MongodbConfiguration from "model/mongoConfig";
+import MongodbConfiguration from "model/mongoConfig";
 
 
-// const {collection, initialSessionData, $MongoDBAdapter} = MongodbConfiguration;
+const {collection, initialSessionData, $MongoDBAdapter} = MongodbConfiguration;
 
 config();
 
 type MyContext2 = FileFlavor<Context> & Context;
-// export type MyContext = MyContext2 & SessionFlavor<MongodbConfiguration.ISessionData>;
-export type MyContext = MyContext2 & SessionFlavor<Context>;
+export type MyContext = MyContext2 & SessionFlavor<MongodbConfiguration.ISessionData>;
 // Create a bot using the Telegram token
 const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
 
 bot.api.config.use(hydrateFiles(bot.token));
 
 
-// bot.use(session({
-//     initial: (): MongodbConfiguration.ISessionData => (initialSessionData()),
-//     storage: enhanceStorage({
-//         storage: new $MongoDBAdapter({collection})
-//     })
-// }));
+bot.use(session({
+    initial: (): MongodbConfiguration.ISessionData => (initialSessionData()),
+    storage: enhanceStorage({
+        storage: new $MongoDBAdapter({collection})
+    })
+}));
 
 const app = express();
 app.use(express.json());
