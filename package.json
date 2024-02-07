@@ -23,6 +23,8 @@
   "dependencies": {
     "@grammyjs/files": "^1.0.4",
     "@grammyjs/menu": "^1.2.1",
+    "@grammyjs/storage-mongodb": "^2.4.1",
+    "@types/chai-http": "^4.2.0",
     "body-parser": "^1.20.2",
     "chai-http": "^4.4.0",
     "cors": "^2.8.5",
@@ -30,7 +32,8 @@
     "express": "^4.18.2",
     "grammy": "^1.20.3",
     "lodash": "^4.17.21",
-    "@types/chai-http": "^4.2.0"
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",

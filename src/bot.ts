@@ -1,30 +1,32 @@
 import {config} from "dotenv";
-import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard, SessionFlavor, session, InputMediaBuilder, InputFile} from "grammy";
+import {Api, Bot, CommandContext, Context, RawApi, Keyboard, webhookCallback, InlineKeyboard, SessionFlavor, session, InputMediaBuilder, InputFile, enhanceStorage} from "grammy";
 import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
 import FileHandling from "./namespaces/FileHandling";
 import fs from "fs";
+// import MongodbConfiguration from "model/mongoConfig";
+
+
+// const {collection, initialSessionData, $MongoDBAdapter} = MongodbConfiguration;
 
 config();
 
-interface SessionData{
-    pizzaCount: number;
-}
-
 type MyContext2 = FileFlavor<Context> & Context;
-export type MyContext = MyContext2 & SessionFlavor<SessionData>;
+// export type MyContext = MyContext2 & SessionFlavor<MongodbConfiguration.ISessionData>;
+export type MyContext = MyContext2 & SessionFlavor<Context>;
 // Create a bot using the Telegram token
 const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
 
 bot.api.config.use(hydrateFiles(bot.token));
 
 
-// Install session middleware, and define the initial session value.
-export function initial():SessionData{
-    return {pizzaCount: 0};
-}
-bot.use(session({initial}));
+// bot.use(session({
+//     initial: (): MongodbConfiguration.ISessionData => (initialSessionData()),
+//     storage: enhanceStorage({
+//         storage: new $MongoDBAdapter({collection})
+//     })
+// }));
 
 const app = express();
 app.use(express.json());
@@ -100,14 +102,12 @@ bot.on([":photo", ":video", ":animation"], async (ctx)=>{
 })
 
 bot.command("hunger", async (ctx)=>{
-    const count = ctx.session.pizzaCount;
     // console.log(ctx?.from);
     // console.log(ctx?.session);
-    await ctx.reply(`Your hunger level is ${count}!`);
+    await ctx.reply(`Your hunger level is !`);
 });
 
 bot.hears(/.*🍕.*/, (ctx)=>{
-    ctx.session.pizzaCount++;
     ctx.reply("I hear you");
 });
 
@@ -356,8 +356,10 @@ menuPage1.register(menuPage2);
 bot.use(rootOptions);
 
 bot.command("start", async (ctx:CommandContext<MyContext>)=>{
-    console.log(ctx);
-    console.log(ctx.from);
+    // console.log(ctx);
+    // console.log(ctx.from);
+    console.log("This is the session data");
+    console.log(ctx?.session); 
     await ctx.reply(
         rootMenuText,
         {
@@ -386,5 +388,6 @@ if(process.env.NODE_ENV === "production"){
     });
 }else{
     // start the bot
+    bot.catch((err) => console.error(err.message));
     bot.start();
 }
