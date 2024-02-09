@@ -2,7 +2,7 @@ import * as chai from 'chai';
 // import chaiHttp = require('chai-http');
 import 'mocha';
 // chai.use(chaiHttp);
-import {initial, FILE_PATH, labels, replyInput, paymentOptionMenu, balanceMenuDynamicFunc, sendPhoto} from "../src/bot.js";
+import {FILE_PATH, labels, replyInput, paymentOptionMenu, balanceMenuDynamicFunc, sendPhoto} from "../src/bot.js";
 import {fileHandle} from "../src/namespaces/FileHandlingToTest.js";
 
 
@@ -27,7 +27,7 @@ const replyInputData = replyInput("Select a payment method:", paymentOptionMenu)
 describe("in bot functions", ()=>{
     describe("initialize session function", ()=>{
         it("Should have pizzaCount Object", ()=>{
-            assert.deepEqual(initial(), {pizzaCount: 0})
+            assert.deepEqual({}, {pizzaCount: 0})
         })
     })
 
