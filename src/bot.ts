@@ -73,16 +73,25 @@ async function main(){
     /start
     /yo - Typing or tapping in /yo should log your first name and a random text
     /error - Tap /error if you see anything wrong
-    `);
+    `).then(()=>{
+        console.log("description set");
+    }).catch((e)=>{
+        console.error(e.message);
+    });
     
     
     bot.api.setMyCommands([
         {command: "start", description: "starts the bot (usage: /start [text])"},
+        {command: "mydata", description: "removes custom Keyboard (usage: /myData[text])"},
         {command: "yo", description: "Be greeted by the bot"},
         {command: "error", description: "Enables user to enter send an error message to developer. (usage: /error [text])"},
         {command: "customkeyboard", description: "Start custom Keyboard (usage: /customkeyboard [text])"},
         {command: "removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])"},
-    ])
+    ]).then(()=>{
+        console.log("Commands have been set successfully")
+    }).catch((error)=>{
+        console.error(error.message);
+    })
     
     bot.on([":photo", ":video", ":animation"], async (ctx)=>{
         const fileOptions: FileHandling.iFileHandle<MyContext> = {
@@ -356,7 +365,7 @@ async function main(){
     bot.command("start", async (ctx:CommandContext<MyContext>)=>{
         try{
 
-        const userData = await User.findOne({key: /\d*/});
+            const userData = await User.findOne({key: /\d*/});
             console.log(userData);
             // console.log(ctx.from);
             console.log("This is the session data");
@@ -389,6 +398,11 @@ async function main(){
         }
     
     });
+
+
+    bot.command("mydata", async (ctx)=>{
+        ctx.reply(`This is your data ${ctx?.from.first_name} \n ${JSON.stringify(ctx.session)}`)
+    })
     
     
     if(process.env.NODE_ENV === "production"){

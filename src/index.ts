@@ -7,6 +7,7 @@ import express from "express";
 import {Menu, MenuRange} from "@grammyjs/menu";
 import { FileFlavor, hydrateFiles } from "@grammyjs/files";
 import fs from 'fs';
+import TelegramBot from "node-telegram-bot-api";
 
 config();
 
@@ -17,68 +18,82 @@ interface SessionData{
 type MyContext2 = FileFlavor<Context> & Context;
 type MyContext = MyContext2 & SessionFlavor<SessionData>;
 // Create a bot using the Telegram token
-const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+// const bot = new Bot<MyContext>(process.env.BOT_TOKEN || "");
+const bot = new Bot(process.env.BOT_TOKEN || "");
 
-bot.api.config.use(hydrateFiles(bot.token));
-
-bot.on([":photo", ":video", ":animation"], async (ctx)=>{
-    const path2:string = await downloadFile({ctx, isUrl:true});
-    const path:string = await downloadFile({ctx, path:'\\tmp\\assets'});
-    console.log(path);
-    console.log(path2);
+bot.api.setMyCommands([
+    {command: "start", description: "starts the bot (usage: /start [text])"},
+    {command: "mydata", description: "removes custom Keyboard (usage: /myData[text])"},
+    {command: "yo", description: "Be greeted by the bot"},
+    {command: "error", description: "Enables user to enter send an error message to developer. (usage: /error [text])"},
+    {command: "customkeyboard", description: "Start custom Keyboard (usage: /customkeyboard [text])"},
+    {command: "removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])"},
+]).then(()=>{
+    console.log("Commands have been set successfully")
+}).catch((error)=>{
+    console.error(error.message);
 })
 
-async function downloadFile({ctx, isUrl=false, path=""}:any){
+// bot.api.config.use(hydrateFiles(bot.token));
 
-    try{
-        if(isUrl){// return the telegram url to the uploaded file
-            const file = await ctx.getFile();
-            return await file.getUrl();
-        }
+// bot.on([":photo", ":video", ":animation"], async (ctx)=>{
+//     const path2:string = await downloadFile({ctx, isUrl:true});
+//     const path:string = await downloadFile({ctx, path:'\\tmp\\assets'});
+//     console.log(path);
+//     console.log(path2);
+// })
 
-        path = editPath(path);
-        if(!fs.existsSync(`${__dirname}${path}`)){
-            fs.mkdirSync(`${__dirname}${path}`, {recursive: true})
-        }
-        const file = await ctx.getFile();
-        const fileRegex = /.*(\..*)/;
-        let ctxFilePath = file?.file_path;
-        let extension = ctxFilePath.match(fileRegex)[1];
-        const downloadPath = await file.download(`${__dirname}${path}\\${ctx?.from?.id}${extension}`);
-        return downloadPath;
-    }catch(e){
-        throw new Error(e.message);
-    }
-}
+// async function downloadFile({ctx, isUrl=false, path=""}:any){
 
-function editPath(path:string):string{// Removes ./ and / and replaces with \ and returns path
-    if(path.includes("./")||path.includes("/")){
-        return path.replace(/\.\/|\//g, '\\');
-    }
-    return path;
-}
+//     try{
+//         if(isUrl){// return the telegram url to the uploaded file
+//             const file = await ctx.getFile();
+//             return await file.getUrl();
+//         }
+
+//         path = editPath(path);
+//         if(!fs.existsSync(`${__dirname}${path}`)){
+//             fs.mkdirSync(`${__dirname}${path}`, {recursive: true})
+//         }
+//         const file = await ctx.getFile();
+//         const fileRegex = /.*(\..*)/;
+//         let ctxFilePath = file?.file_path;
+//         let extension = ctxFilePath.match(fileRegex)[1];
+//         const downloadPath = await file.download(`${__dirname}${path}\\${ctx?.from?.id}${extension}`);
+//         return downloadPath;
+//     }catch(e){
+//         throw new Error(e.message);
+//     }
+// }
+
+// function editPath(path:string):string{// Removes ./ and / and replaces with \ and returns path
+//     if(path.includes("./")||path.includes("/")){
+//         return path.replace(/\.\/|\//g, '\\');
+//     }
+//     return path;
+// }
 
 
 
-// Install session middleware, and define the initial session value.
-function initial():SessionData{
-    return {pizzaCount: 0};
-}
-bot.use(session({initial}));
+// // Install session middleware, and define the initial session value.
+// function initial():SessionData{
+//     return {pizzaCount: 0};
+// }
+// bot.use(session({initial}));
 
 
-bot.command("hunger", async (ctx)=>{
-    const count = ctx.session.pizzaCount;
-    console.log(ctx?.from);
-    await ctx.reply(`Your hunger level is ${count}!`);
-});
+// bot.command("hunger", async (ctx)=>{
+//     const count = ctx.session.pizzaCount;
+//     console.log(ctx?.from);
+//     await ctx.reply(`Your hunger level is ${count}!`);
+// });
 
-bot.hears(/.*🍕.*/, (ctx)=>{
-    ctx.session.pizzaCount++;
-    ctx.reply("I hear you");
-});
+// bot.hears(/.*🍕.*/, (ctx)=>{
+//     ctx.session.pizzaCount++;
+//     ctx.reply("I hear you");
+// });
 
-bot.start();
+// bot.start();
 
 // const introductionMessage:string = `
 // This telegram bot is under development
@@ -313,18 +328,26 @@ bot.start();
 //     )
 // });
 
-
+        // {command: "start", description: "starts the bot (usage: /start [text])"},
+//         {command: "myData", description: "removes custom Keyboard (usage: /myData[text])"},
+//         {command: "yo", description: "Be greeted by the bot"},
+//         {command: "error", description: "Enables user to enter send an error message to developer. (usage: /error [text])"},
+//         {command: "customkeyboard", description: "Start custom Keyboard (usage: /customkeyboard [text])"},
+//         {command: "removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])"}
 
 
 // bot.api.setMyCommands([
-//     {command: "yo", description: "Be greeted by the bot"},
-//     {command: "effect", description: "Apply text effects on the text. (usage: /effect [text])"},
-//     {command: "customkeyboard", description: "Start a custom Keyboard (usage: /customKeyboard [text])"},
-//     {command: "removekeyboard", description: "Removes custom Keyboard (usage: /removekeyboard [text])"}
+//     {command: "start", description: "starts the bot (usage: /start [text])"},
+//     {command: "myData", description: "returns the storage of user (usage: /myData[text])"},
+//     // {command: "/yo", description: "Be greeted by the bot"},
+//     // {command: "/error", description: "Enables user to enter send an error message to developer. (usage: /error [text])"},
+//     // {command: "/customkeyboard", description: "Start custom Keyboard (usage: /customkeyboard [text])"},
+//     // {command: "/removekeyboard", description: "removes custom Keyboard (usage: /removekeyboard [text])"}
 // ])
 
 
-// // ****************** Interactive menus *************start
+
+// ****************** Interactive menus *************start
 
 // // create a simple menu.
 // const menu: Menu<Context> = new Menu<Context>("my-menu-identifier")
@@ -614,21 +637,21 @@ bot.start();
 //     );
 // })
 
-// // Deploying to a real server
-// if(process.env.NODE_ENV === "production"){
-//     // Use Webhooks for the production server
-//     const app = express();
-//     app.use(express.json());
-//     app.use(webhookCallback(bot, "express"));
+// Deploying to a real server
+if(process.env.NODE_ENV === "production"){
+    // Use Webhooks for the production server
+    const app = express();
+    app.use(express.json());
+    app.use(webhookCallback(bot, "express"));
 
-//     const PORT = process.env.PORT || 3000;
-//     app.listen(PORT, ()=>{
-//         console.log(`Bot listening on port ${PORT}`)
-//     })
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, ()=>{
+        console.log(`Bot listening on port ${PORT}`)
+    })
 
-// }else{
-//     // bot.on('message', replyWithIntro);
-//     bot.start();
-// }
+}else{
+    // bot.on('message', replyWithIntro);
+    bot.start();
+}
 
 
