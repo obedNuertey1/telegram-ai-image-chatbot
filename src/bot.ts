@@ -7,6 +7,9 @@ import FileHandling from "./namespaces/FileHandling";
 import fs from "fs";
 import {bootstrap, ISessionData} from "./model/mongodbConfiguration";
 import { User } from "./model/mongoSchema";
+import bodyParser from 'body-parser';
+import cors from "cors";
+
 
 config();
 
@@ -24,9 +27,18 @@ async function main(){
     
     
     const app = express();
-    app.use(express.json());
-    app.use(webhookCallback(bot, "express"));
+    app.use(cors({optionsSuccessStatus: 200}));
+    app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({extended: true}));
     
+    app.route("/").get((req, res)=>{
+        try{
+            res.send(`${req.query.name}`);
+            console.log(req);
+        }catch(e){
+            console.error(e.message);
+        }
+    })
     
     const FILE_PATH = "\\tmp\\assets";
     // export const FILE_PATH = "..\\src\\temp\\assets";
@@ -407,6 +419,8 @@ async function main(){
     
     if(process.env.NODE_ENV === "production"){
         // Use Webhooks for the production server
+        bot.catch((err) => console.error(err.message));
+        bot.start();
         const PORT = process.env.PORT || 3000;
         app.listen(PORT, ()=>{
             console.log(`Bot listening on port ${PORT}`);
